@@ -6,6 +6,57 @@
   
   <script>
 
+    // Handle response method after response is returned from fetch method
+    const handleResponse = async (response) => {
+
+      response.text().then((resText) => {
+        const content = document.querySelector("#content");
+        let contentType = response.headers.get('Content-Type');
+        content.textContent = "Message: ";
+
+        if (contentType === 'application/json'){
+          console.log(resText);
+          let parsedResponse = JSON.parse(resText);
+          content.textContent += parsedResponse.message;
+        }
+        else {
+          console.log(resText);
+          let parsedResponse = new window.DOMParser().parseFromString(resText, 'text/xml');
+          content.textContent += parsedResponse.querySelector('message').textContent;
+        }
+      });
+
+    };
+
+    // Updates the drop down values and fetches response
+    const requestUpdate = async (urlObject, acceptedTypeObject) => {
+      
+      const url = urlObject.value;
+      const acceptedType = acceptedTypeObject.value
+      
+      const options = {
+        method: 'GET',
+        headers: {'Accept': acceptedType},
+      }
+      
+      let fetchPromise = fetch(url, options);
+
+      fetchPromise.then((response) => { handleResponse(response) });
+    };
+
+    // Init function for when page first loads 
+    const init = () => {
+      const sendButton = document.querySelector("#send");
+      const pageObject = document.querySelector("#page");
+      const typeObject = document.querySelector("#type");
+
+      const getValues = () => requestUpdate(pageObject, typeObject);
+
+      sendButton.addEventListener('click', getValues);
+      
+    }
+
+    window.onload = init;
   </script>
 </head>
 <body>
